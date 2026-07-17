@@ -1,0 +1,13 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Project runtime artifacts
+bruteforce.db
+*.log

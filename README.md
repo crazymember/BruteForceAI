@@ -84,14 +84,32 @@ BruteForceAI is an advanced penetration testing tool that revolutionizes traditi
 ```bash
 # Python 3.8 or higher
 python --version
-
-# Install Playwright browsers
-playwright install chromium
 ```
+
+### Set Up a Virtual Environment (recommended)
+Keep dependencies isolated from your system Python using the built-in `venv`:
+```bash
+# 1. Create a virtual environment
+python -m venv .venv
+
+# 2. Activate it
+#   Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+#   Windows (cmd):
+.venv\Scripts\activate.bat
+#   macOS / Linux:
+source .venv/bin/activate
+```
+
+> **Note:** The `python -m venv .venv` step is only needed once. In every new terminal session, re-run the activation command (step 2) before using the tool. To leave the virtual environment, run `deactivate`.
 
 ### Install Dependencies
 ```bash
+# Install Python packages
 pip install -r requirements.txt
+
+# Install the Playwright browser
+playwright install chromium
 ```
 
 **Required packages:**
@@ -250,6 +268,7 @@ python BruteForceAI.py --skip-version-check analyze --urls targets.txt
 | `--llm-provider` | LLM provider (ollama/groq) | ollama |
 | `--llm-model` | Model name | llama3.2:3b (ollama), llama-3.3-70b-versatile (groq) |
 | `--llm-api-key` | API key for Groq | None |
+| `--ollama-url` | Ollama server URL | http://localhost:11434 |
 | `--selector-retry` | Retry attempts for selectors | 10 |
 | `--force-reanalyze` | Force re-analysis | False |
 
@@ -284,6 +303,7 @@ python BruteForceAI.py --skip-version-check analyze --urls targets.txt
 | `--debug` | Debug information | False |
 | `--output` | Save output to file | None |
 | `--no-color` | Disable colors | False |
+| `--database` | SQLite database file path | bruteforce.db |
 
 ### Webhook Options
 | Parameter | Description |
