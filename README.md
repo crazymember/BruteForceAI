@@ -132,16 +132,16 @@ ollama pull llama3.2:3b
 #### Performance Tips
 ```bash
 # Best quality (recommended for complex forms)
-python main.py analyze --urls targets.txt --llm-provider groq --llm-model llama-3.3-70b-versatile --llm-api-key YOUR_KEY
+python BruteForceAI.py analyze --urls targets.txt --llm-provider groq --llm-model llama-3.3-70b-versatile --llm-api-key YOUR_KEY
 
 # Fast and reliable
-python main.py analyze --urls targets.txt --llm-provider groq --llm-model llama3-70b-8192 --llm-api-key YOUR_KEY
+python BruteForceAI.py analyze --urls targets.txt --llm-provider groq --llm-model llama3-70b-8192 --llm-api-key YOUR_KEY
 
 # Lightweight for simple forms
-python main.py analyze --urls targets.txt --llm-provider groq --llm-model gemma2-9b-it --llm-api-key YOUR_KEY
+python BruteForceAI.py analyze --urls targets.txt --llm-provider groq --llm-model gemma2-9b-it --llm-api-key YOUR_KEY
 
 # Local processing (no API key needed)
-python main.py analyze --urls targets.txt --llm-provider ollama --llm-model llama3.2:3b
+python BruteForceAI.py analyze --urls targets.txt --llm-provider ollama --llm-model llama3.2:3b
 ```
 
 ---
@@ -152,17 +152,17 @@ python main.py analyze --urls targets.txt --llm-provider ollama --llm-model llam
 
 #### Stage 1: Analyze Login Forms
 ```bash
-python main.py analyze --urls urls.txt --llm-provider ollama
+python BruteForceAI.py analyze --urls urls.txt --llm-provider ollama
 ```
 
 #### Stage 2: Execute Attack
 ```bash
-python main.py attack --urls urls.txt --usernames users.txt --passwords passwords.txt --threads 10
+python BruteForceAI.py attack --urls urls.txt --usernames users.txt --passwords passwords.txt --threads 10
 ```
 
 ### Command Structure
 ```bash
-python main.py <command> [options]
+python BruteForceAI.py <command> [options]
 ```
 
 #### Available Commands
@@ -178,15 +178,15 @@ python main.py <command> [options]
 ### 1. Complete Workflow
 ```bash
 # Step 1: Analyze forms
-python main.py analyze --urls targets.txt --llm-provider ollama --llm-model llama3.2:3b
+python BruteForceAI.py analyze --urls targets.txt --llm-provider ollama --llm-model llama3.2:3b
 
 # Step 2: Attack with 20 threads
-python main.py attack --urls targets.txt --usernames users.txt --passwords passwords.txt --threads 20 --delay 5 --jitter 2
+python BruteForceAI.py attack --urls targets.txt --usernames users.txt --passwords passwords.txt --threads 20 --delay 5 --jitter 2
 ```
 
 ### 2. Advanced Attack Configuration
 ```bash
-python main.py attack \
+python BruteForceAI.py attack \
   --urls targets.txt \
   --usernames users.txt \
   --passwords passwords.txt \
@@ -202,7 +202,7 @@ python main.py attack \
 
 ### 3. With Webhook Notifications
 ```bash
-python main.py attack \
+python BruteForceAI.py attack \
   --urls targets.txt \
   --usernames users.txt \
   --passwords passwords.txt \
@@ -213,7 +213,7 @@ python main.py attack \
 
 ### 4. Browser Debugging
 ```bash
-python main.py analyze \
+python BruteForceAI.py analyze \
   --urls targets.txt \
   --show-browser \
   --browser-wait 5 \
@@ -224,29 +224,20 @@ python main.py analyze \
 ### 5. Check for Updates
 ```bash
 # Check for software updates
-python main.py check-updates
+python BruteForceAI.py check-updates
 
 # Check with output to file
-python main.py check-updates --output update_check.txt
-```
-
-### Manual Check (Detailed)
-```bash
-# Check for updates manually (same as automatic but can save to file)
-python main.py check-updates
-
-# Check with output to file
-python main.py check-updates --output update_check.txt
+python BruteForceAI.py check-updates --output update_check.txt
 ```
 
 ### Skip Version Check
 ```bash
 # Skip version check completely for faster startup
-python main.py analyze --urls targets.txt --skip-version-check
-python main.py attack --urls targets.txt --usernames users.txt --passwords passwords.txt --skip-version-check
+python BruteForceAI.py analyze --urls targets.txt --skip-version-check
+python BruteForceAI.py attack --urls targets.txt --usernames users.txt --passwords passwords.txt --skip-version-check
 
 # Also works as global flag (before subcommand)
-python main.py --skip-version-check analyze --urls targets.txt
+python BruteForceAI.py --skip-version-check analyze --urls targets.txt
 ```
 
 ---
@@ -317,10 +308,10 @@ BruteForceAI includes simple update checking to keep you informed about new rele
 ### Manual Check (Detailed)
 ```bash
 # Check for updates manually (same as automatic but can save to file)
-python main.py check-updates
+python BruteForceAI.py check-updates
 
 # Check with output to file
-python main.py check-updates --output update_check.txt
+python BruteForceAI.py check-updates --output update_check.txt
 ```
 
 ### Update Information
@@ -350,7 +341,7 @@ Logs all attack attempts with results and metadata.
 ### Database Management
 ```bash
 # Clean all data
-python main.py clean-db
+python BruteForceAI.py clean-db
 
 # View database
 sqlite3 bruteforce.db
