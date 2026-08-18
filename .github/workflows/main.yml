@@ -1,6 +1,5 @@
 name: Build Double‑Click EXE
 
-
 on:
   push:
     branches: [ main, master ]
@@ -9,8 +8,10 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -27,77 +28,11 @@ jobs:
         run: |
           playwright install chromium
 
-      - name: Apply default‑mode patch
-        shell: pwsh
-        run: |
-          # Insert the run_default_mode function before the main block
-          $content = Get-Content BruteForceAI.py -Raw
-          $pattern = '(?<=if __name__ == "__main__":.*?)'
-          # We'll just use a simple replace – I'll provide a full script below
-          # For simplicity, we'll overwrite BruteForceAI.py with a patched version.
-          # But here's a concrete example (I'll write a clean patch in the next step)
-          # Actually, I'll create a patch file and apply it.
-          # For brevity, I'll show the final patched code in the workflow.
+      # Apply the double‑click patch (using the separate script)
+      - name: Apply patch for double‑click mode
+        run: python patch.py
 
-      # Instead of complex patching, let's just overwrite with a pre‑prepared patched file.
-      # But you can also use a here‑string to create the new file.
-
-      - name: Create patched BruteForceAI.py
-        shell: pwsh
-        run: |
-          # This is a simplified patch – we'll write the new file from scratch
-          # We'll combine the original with the default logic.
-          # I'll provide the complete patched file as a gist, or we can generate it dynamically.
-          # For now, I'll provide a minimal patch that works.
-          # =======================================================
-          # We'll use a simple approach: prepend the default function and modify the main block.
-          # =======================================================
-          $original = Get-Content BruteForceAI.py -Raw
-          # Insert the function after imports
-          $patch = @'
-      def run_default_mode():
-          import sys, yaml
-          from BruteForceCore import BruteForceAI
-          try:
-              with open("config.yaml", "r") as f:
-                  config = yaml.safe_load(f)
-          except Exception as e:
-              print(f"Error: {e}")
-              sys.exit(1)
-          # Build dummy args object
-          class Args:
-              pass
-          args = Args()
-          args.command = 'attack'
-          args.urls = config.get('targets', [])
-          args.usernames = config.get('usernames', [])
-          args.passwords = config.get('passwords', [])
-          args.threads = config.get('threads', 5)
-          args.llm_provider = config.get('llm_provider', 'ollama')
-          args.llm_model = config.get('llm_model', 'llama2')
-          args.groq_api_key = config.get('groq_api_key', '')
-          args.timeout = config.get('timeout', 10)
-          args.verbose = config.get('verbose', False)
-          ai = BruteForceAI(args)
-          ai.run()
-      '@
-          # Insert after the last import
-          $importEnd = $original.LastIndexOf('import') + 7
-          $newContent = $original.Substring(0, $importEnd) + "`n" + $patch + "`n" + $original.Substring($importEnd)
-          # Now modify the main block: replace if __name__ == "__main__": block
-          $mainPattern = '(?<=if __name__ == "__main__":\s*)(?<body>.*?)(?=\Z)'
-          $newMain = @'
-      import sys
-      if len(sys.argv) == 1:
-          run_default_mode()
-      else:
-          main()
-      '@
-          $newContent = $newContent -replace '(?<=if __name__ == "__main__":\s*)(?<body>.*?)(?=\Z)', $newMain
-          Set-Content -Path BruteForceAI.py -Value $newContent
-          # Display the modified file for debugging
-          Get-Content BruteForceAI.py
-
+      # Build the executable
       - name: Build with PyInstaller
         shell: pwsh
         run: |
@@ -111,7 +46,7 @@ jobs:
             --collect-all playwright `
             BruteForceAI.py
 
-      - name: Upload EXE
+      - name: Upload executable as artifact
         uses: actions/upload-artifact@v4
         with:
           name: BruteForceAI-DoubleClick
