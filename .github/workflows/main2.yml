@@ -1,0 +1,138 @@
+name: Build Double‑Click EXE
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Install Playwright Chromium
+        run: |
+          playwright install chromium
+
+      # ---- Create patch.py inline ----
+      - name: Create patch script
+        shell: pwsh
+        run: |
+          $patchContent = @'
+      import re, sys
+
+      def patch_bruteforceai():
+          with open("BruteForceAI.py", "r", encoding="utf-8") as f:
+              content = f.read()
+
+          # 1. Insert the run_default_mode function after the last import
+          default_func = '''
+      def run_default_mode():
+          """Called when no command-line arguments are provided."""
+          import sys, yaml
+          from BruteForceCore import BruteForceAI
+          try:
+              with open("config.yaml", "r") as f:
+                  config = yaml.safe_load(f)
+          except Exception as e:
+              print(f"Error loading config.yaml: {e}")
+              sys.exit(1)
+          class Args:
+              pass
+          args = Args()
+          args.command = 'attack'
+          args.urls = config.get('targets', [])
+          args.usernames = config.get('usernames', [])
+          args.passwords = config.get('passwords', [])
+          args.threads = config.get('threads', 5)
+          args.llm_provider = config.get('llm_provider', 'ollama')
+          args.llm_model = config.get('llm_model', 'llama2')
+          args.groq_api_key = config.get('groq_api_key', '')
+          args.timeout = config.get('timeout', 10)
+          args.verbose = config.get('verbose', False)
+          ai = BruteForceAI(args)
+          ai.run()
+      '''
+
+          # Find the line number of the last import
+          lines = content.splitlines()
+          last_import_idx = -1
+          import_re = re.compile(r'^(from|import)\s+')
+          for i, line in enumerate(lines):
+              if import_re.match(line.strip()):
+                  last_import_idx = i
+          if last_import_idx == -1:
+              print("No import statements found – aborting.")
+              sys.exit(1)
+
+          # Insert the function after that line
+          lines.insert(last_import_idx + 1, default_func)
+
+          # 2. Replace the existing if __name__ block with our new one
+          new_main = '''
+      if __name__ == "__main__":
+          import sys
+          if len(sys.argv) == 1:
+              run_default_mode()
+          else:
+              main()
+      '''
+
+          # Find the old main block and replace from its start to the end of file
+          # We'll search for the line that starts with "if __name__"
+          for i, line in enumerate(lines):
+              if line.strip().startswith('if __name__ == "__main__":'):
+                  # Replace everything from this line onward
+                  lines = lines[:i] + [new_main]
+                  break
+          else:
+              print("Could not find main block; aborting.")
+              sys.exit(1)
+
+          # Write the new file
+          with open("BruteForceAI.py", "w", encoding="utf-8") as f:
+              f.write("\n".join(lines))
+
+          print("Patch applied successfully.")
+
+      if __name__ == "__main__":
+          patch_bruteforceai()
+      '@
+          $patchContent | Out-File -FilePath patch.py -Encoding utf8
+
+      - name: Apply double‑click patch
+        run: python patch.py
+
+      - name: Build with PyInstaller
+        shell: pwsh
+        run: |
+          pyinstaller --onefile `
+            --name BruteForceAI `
+            --add-data "$env:USERPROFILE\AppData\Local\ms-playwright;playwright\browsers" `
+            --add-data "$env:pythonLocation\Lib\site-packages\playwright\driver;playwright\driver" `
+            --hidden-import playwright `
+            --hidden-import playwright.async_api `
+            --hidden-import playwright.sync_api `
+            --collect-all playwright `
+            BruteForceAI.py
+
+      - name: Upload executable as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BruteForceAI-DoubleClick
+          path: dist\BruteForceAI.exe
+          retention-days: 30
